@@ -23,14 +23,15 @@ const Login = () => {
         setIsLoading(true);
         try {
           const response = await login({ email, password });
-          setToken(response.accessToken);
+          setToken("accessToken", response.accessToken);
+          setToken("refreshToken", response.refreshToken);
           alert("로그인 성공");
           navigate("/home");
         } catch (error: any) {
           console.error("로그인 에러:", error);
           console.error("응답 데이터:", error.response?.data);
           
-          // 네트워크 에러 (서버 연결 실패)
+          
           if (!error.response) {
             const isNetworkError = error.code === 'ERR_NETWORK' || error.message === 'Network Error';
             if (isNetworkError) {
@@ -44,7 +45,6 @@ const Login = () => {
             return;
           }
           
-          // 백엔드 에러 응답 구조: { status, statusCode, message, data }
           const errorMessage = 
             error.response?.data?.message || 
             error.message || 

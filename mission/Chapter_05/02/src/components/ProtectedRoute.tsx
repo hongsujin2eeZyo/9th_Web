@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { getToken, removeToken } from "../utils/storage";
+import { api } from "../api/axiosInstance";
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
@@ -8,36 +9,23 @@ type ProtectedRouteProps = {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const [isValid, setIsValid] = useState<boolean | null>(null);
-  const token = getToken();
 
   useEffect(() => {
     const validateToken = async () => {
-      if (!token) {
-        setIsValid(false);
-        return;
-      }
-
       try {
-        const response = await fetch("http://localhost:8000/v1/auth/protected", {
-          method: "GET", 
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
 
-        if (!response.ok) throw new Error("토큰이 유효하지 않습니다.");
-
-       
+        const res = await api.get("/v1/auth/protected");
+        console.log("토큰 검증 성공:", res.data);
         setIsValid(true);
-      } catch {
+      } catch (error: any) {
+        console.error("토큰 검증 실패:", error);
         removeToken();
         setIsValid(false);
       }
     };
 
     validateToken();
-  }, [token]);
+  }, []);
 
   if (isValid === null) {
     return (
