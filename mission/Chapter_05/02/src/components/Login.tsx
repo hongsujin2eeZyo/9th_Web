@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useLogin } from "../hooks/useLogin";
 import { login } from "../api/auth";
 import { setToken } from "../utils/storage";
+import { useEffect } from "react";
 
 const Login = () => { 
     const navigate = useNavigate()
+
     const [isLoading, setIsLoading] = useState(false);
     const {
         email,
@@ -16,6 +18,8 @@ const Login = () => {
         handlePasswordChange,
         isValid,
       } = useLogin();
+
+
 
       const handleSubmit = async () => {
         if (!isValid) return;
@@ -55,6 +59,11 @@ const Login = () => {
         }
       };
 
+      const handleGoogleLogin = () => {
+        window.location.href =
+          import.meta.env.VITE_SERVER_API_URL + "/v1/auth/google/login";
+      };
+    
       
     return (
         <div className="text-white px-6 py-4 shadow-md  items-center gap-4 flex flex-col">
@@ -64,10 +73,18 @@ const Login = () => {
                 <div className="w-6" /> 
             </div>
 
-             <button className="w-full max-w-xs border border-white rounded-xl py-3 flex items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 cursor-pointer">
-                <img src="https://www.svgrepo.com/show/355037/google.svg" alt="Google" className="w-5 h-5" />
+            <button
+                
+                onClick={handleGoogleLogin}
+                className="w-full max-w-xs border border-white rounded-xl py-3 flex items-center justify-center gap-2 hover:scale-105 transition-transform duration-200 cursor-pointer"
+              >
+                <img
+                  src="https://www.svgrepo.com/show/355037/google.svg"
+                  alt="Google"
+                  className="w-5 h-5"
+                />
                 <span>구글 로그인</span>
-            </button>
+              </button>
 
             <div className="flex items-center w-full max-w-xs my-5">
                 <div className="flex-1 h-px bg-white/40"></div>

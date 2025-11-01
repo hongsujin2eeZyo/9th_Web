@@ -8,7 +8,7 @@ export const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// ✅ 요청 인터셉터
+
 api.interceptors.request.use(
   (config) => {
     const token = getToken("accessToken");
@@ -18,8 +18,8 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ 응답 인터셉터 (토큰 만료 처리)
-let isRefreshing = false; // 중복 refresh 요청 방지
+
+let isRefreshing = false; 
 let refreshSubscribers: ((token: string) => void)[] = [];
 
 const onRrefreshed = (newToken: string) => {
@@ -32,9 +32,8 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // accessToken 만료 (401 Unauthorized)
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true; // 무한 루프 방지
+      originalRequest._retry = true; 
       const refreshToken = getToken("refreshToken");
 
       if (!refreshToken) {
@@ -43,7 +42,7 @@ api.interceptors.response.use(
         return Promise.reject(error);
       }
 
-      // 이미 갱신 중이면 기다렸다가 다시 요청
+
       if (isRefreshing) {
         return new Promise((resolve) => {
           refreshSubscribers.push((newToken) => {
@@ -62,15 +61,15 @@ api.interceptors.response.use(
 
         const { accessToken, refreshToken: newRefreshToken } = res.data.data;
 
-        // 토큰 갱신 후 저장
+     
         setToken("accessToken", accessToken);
         setToken("refreshToken", newRefreshToken);
 
-        // 대기 중이던 요청들 재시도
+
         onRrefreshed(accessToken);
         isRefreshing = false;
 
-        // 실패했던 요청 다시 실행
+
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
