@@ -14,7 +14,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     const validateToken = async () => {
       try {
 
-        const res = await api.get("/v1/auth/protected");
+        const res = await api.get(`${import.meta.env.VITE_SERVER_API_URL}/v1/auth/protected`);
         console.log("토큰 검증 성공:", res.data);
         setIsValid(true);
       } catch (error: any) {
