@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useLogin } from "../hooks/useLogin";
 import { login } from "../api/auth";
 import { setToken } from "../utils/storage";
-import { useEffect } from "react";
+import { isAxiosError } from "axios"; 
 
 const Login = () => { 
     const navigate = useNavigate()
@@ -31,34 +31,39 @@ const Login = () => {
           setToken("refreshToken", response.refreshToken);
           alert("로그인 성공");
           navigate("/home");
-        } catch (error: any) {
-          console.error("로그인 에러:", error);
-          console.error("응답 데이터:", error.response?.data);
-          
-          
-          if (!error.response) {
-            const isNetworkError = error.code === 'ERR_NETWORK' || error.message === 'Network Error';
-            if (isNetworkError) {
-              alert(
-                "서버에 연결할 수 없습니다.\n\n" +
-                "백엔드 서버가 실행 중인지 확인해주세요:\n"
-              );
-            } else {
-              alert("네트워크 오류가 발생했습니다: " + (error.message || "알 수 없는 오류"));
+        }  catch (error: unknown) { // ✅ any 대신 unknown 사용
+          // ✅ axios 에러인지 먼저 판별
+          if (isAxiosError(error)) {
+            console.error("Axios 에러:", error);
+            console.error("응답 데이터:", error.response?.data);
+    
+            if (!error.response) {
+              const isNetworkError =
+                error.code === "ERR_NETWORK" || error.message === "Network Error";
+              if (isNetworkError) {
+                alert(
+                  "서버에 연결할 수 없습니다.\n\n백엔드 서버가 실행 중인지 확인해주세요."
+                );
+              } else {
+                alert("네트워크 오류가 발생했습니다: " + (error.message ?? ""));
+              }
+              return;
             }
-            return;
-          }
-          
-          const errorMessage = 
-            error.response?.data?.message || 
-            error.message || 
+    
+            const errorMessage =  
+            error.response?.data?.message ??
+            error.message ??
             "로그인 실패. 이메일/비밀번호를 확인해주세요.";
           alert(errorMessage);
-        } finally {
-          setIsLoading(false);
+        } else {
+          console.error("비Axios 에러:", error);
+          alert("알 수 없는 오류가 발생했습니다.");
         }
-      };
-
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
       const handleGoogleLogin = () => {
         window.location.href =
           import.meta.env.VITE_SERVER_API_URL + "/v1/auth/google/login";
