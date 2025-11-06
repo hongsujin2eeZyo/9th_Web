@@ -1,33 +1,15 @@
-import { useEffect, useState } from 'react'
-import './App.css'
+import './App.css';
+import {  WelcomeData } from './components/UserDataDisplay';
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 
-interface User{ 
-  id: number;
-  name: string;
-  email: string;
- }
+const queryClient = new QueryClient();
 
-
-function App() {
-  const [data,setData] = useState<User | null>(null);
-
-  useEffect(() :void =>{
-    const fetchData = async() : Promise<void> =>{
-    const response = await fetch('https://jsonplaceholder.typicode.com/users/1');
-    const data = await response.json() as User;
-    setData(data);
-  }
-
-
-    fetchData();
-  },[]); 
-
+export function App(){
   return (
-    <>
-    <h1>Tanstack Query</h1>
-    {data?.name}
-    </>
+    <QueryClientProvider client={queryClient}>
+      <WelcomeData />
+    </QueryClientProvider>
   )
 }
 
-export default App
+export default App;
