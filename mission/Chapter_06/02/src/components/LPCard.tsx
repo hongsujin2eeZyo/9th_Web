@@ -8,9 +8,8 @@ const LpCard = ({ lp }: { lp: Lp }) => {
 
   return (
     <div
-      onClick={() =>
-        navigate(`/lp/${lp.id}`, { state: { background: location } }) // ✅ 배경 저장
-      }
+     onClick={() => navigate(`/lp/${lp.id}`)}
+
       className="relative group overflow-hidden rounded-md cursor-pointer transition-transform duration-300 hover:scale-[1.03]"
     >
       {/* 썸네일 이미지 */}

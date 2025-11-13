@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus } from "lucide-react"; 
+import { Plus } from "lucide-react"; // 아이콘 (lucide-react 설치 필요)
 
 type FloatingButtonProps = {
   onClick?: () => void;

@@ -11,7 +11,7 @@ import SignUpPage from "./pages/SignUpPage";
 import MyPage from "./pages/MyPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import GoogleCallback from "./pages/GoogleCallback";
-import LpDetailModal from "./components/LPDetailModal";
+import LpDetail from "./components/LPDetail";
 
 //location을 감싸기 위해 내부 컴포넌트로 분리
 function AppRoutes() {
@@ -22,7 +22,7 @@ function AppRoutes() {
     <>
       {/* 기본 라우트 (항상 렌더링됨) */}
       <Routes location={background || location}>
-        <Route path="/" element={<Home />} />
+        <Route path="/*" element={<Home />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route
@@ -38,14 +38,13 @@ function AppRoutes() {
           element={<GoogleCallback />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
+
       </Routes>
 
-      {/* 모달 라우트 (Home 위에만 겹침) */}
-      {background && (
-        <Routes>
-          <Route path="/lp/:lpid" element={<LpDetailModal />} />
-        </Routes>
-      )}
+
+      
+ 
+    
     </>
   );
 }

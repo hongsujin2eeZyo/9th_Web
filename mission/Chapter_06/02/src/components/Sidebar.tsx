@@ -1,11 +1,14 @@
 import React from "react";
 import { Search } from "lucide-react"; 
+import { useNavigate } from "react-router-dom";
 
 type SidebarProps = {
   isOpen: boolean;
 };
 
 const Sidebar = ({ isOpen }: SidebarProps) => {
+  const navigate = useNavigate();
+
   return (
     <div
       className={`fixed left-0 top-16 bottom-0 bg-zinc-900 text-white w-64 p-5 transition-transform duration-300 ${
@@ -17,7 +20,7 @@ const Sidebar = ({ isOpen }: SidebarProps) => {
           <Search size={16} className="text-pink-400" />
           <span>찾기</span>
         </li>
-        <li className="hover:text-pink-400 cursor-pointer">마이페이지</li>
+        <li className="hover:text-pink-400 cursor-pointer" onClick={() => navigate("/mypage")}>마이페이지</li>
       </ul>
        
       <ul className="absolute bottom-10 left-1/2 transform -translate-x-1/2">

@@ -1,49 +1,92 @@
-import { removeToken } from "../utils/storage";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import { useUser } from "../hooks/useUser";
+import SortButtons from "./SortButtons";
+import { useFetchMyLp } from "../hooks/useFetchMyLp";
+import { useInView } from "react-intersection-observer";
+import FloatingButton from "./FloatingButton";     
+import LpCreateModal from "./LpCreateModal";    
+const MyInfo = () => {
+  const { user, isLoading: userLoading } = useUser();
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
 
-const My = () => {
-  const { user, isLoading } = useUser();
-  const navigate = useNavigate();
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useFetchMyLp({ order });
 
-  const handleback = () => {
-    navigate("-1");
-  };
+  const { ref, inView } = useInView();
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen text-gray-300">
-        사용자 정보를 불러오는 중...
-      </div>
-    );
-  }
 
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center h-screen text-red-400">
-        사용자 정보를 불러올 수 없습니다.
-      </div>
-    );
+  React.useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage]);
+
+  const lpList = data?.pages.flatMap(page => page.items) ?? [];
+
+  if (userLoading || isLoading) {
+    return <div className="text-center text-white mt-20">LOADING...</div>;
   }
 
   return (
-    <div className="bg-black flex flex-col items-center justify-center h-screen text-white">
-      <h1 className="text-2xl mb-4">내 정보</h1>
-      <div className="bg-zinc-800 p-6 rounded-xl shadow-md w-80">
-        <p>🩷 이름: {user.name}</p>
-        <p>🩷 이메일: {user.email}</p>
-        <p>🩷 ID: {user.id}</p>
+    <div className="w-full min-h-screen bg-black text-white p-6">
+
+      {/* 프로필 */}
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center text-2xl">
+          {user?.name[0]}
+        </div>
+        <div>
+          <h1 className="text-xl font-bold">{user?.name}</h1>
+          <p className="text-gray-400 text-sm">{user?.email}</p>
+        </div>
       </div>
 
-      <button
-        onClick={handleback}
-        className="mt-6 bg-pink-500 hover:bg-pink-600 text-white px-5 py-2 rounded-xl"
-      >
-        뒤로가기
-      </button>
+      <SortButtons order={order} setOrder={setOrder} />
+
+      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 opacity-80">
+        {lpList.map((lp) => (
+          <div
+            key={lp.id}
+            className="aspect-square bg-gray-800 rounded-xl overflow-hidden hover:scale-105 transition"
+          >
+            {lp.thumbnail ? (
+                <img
+                  src={lp.thumbnail}
+                  alt={lp.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    console.error("❌ 이미지 로딩 실패:", lp.thumbnail);
+                    console.log(" 내 LP 데이터:", lpList);
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : (
+              <div className="w-full h-full flex items-center justify-center text-xs text-gray-500">
+                No Image
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* 무한 스크롤 트리거 */}
+      <div ref={ref} className="h-10" />
+
+       {/* ✅ + 버튼 연결 */}
+       <FloatingButton onClick={() => setIsModalOpen(true)} />
+
+
+      <LpCreateModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };
 
-export default My;
+export default MyInfo;

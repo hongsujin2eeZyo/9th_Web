@@ -45,7 +45,8 @@ const Navbar = ({onToggleSidebar, toggleButtonRef, nickname}: NavbarProps) => {
         {token ? (
           <>
             <Search size={16} className="text-white-400" />
-            <span className="text-sm text-gray-300">
+            <span className="text-sm text-gray-300 cursor-pointer"
+              onClick={() => navigate("/mypage")}>
               {nickname ? `${nickname}님, 반갑습니다 👋` : "환영합니다 🎵"}
             </span>
             <button

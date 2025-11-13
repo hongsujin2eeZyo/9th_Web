@@ -5,10 +5,15 @@ import SkeletonLpList from "../components/SkeletonLPList";
 import FloatingButton from "../components/FloatingButton";
 import { useInView } from "react-intersection-observer";
 import SkeletonLpCard from "../components/SkeletonLpCard";
+import SortButtons from "../components/SortButtons";
+import LpCreateModal from "../components/LpCreateModal"; // ✅ 추가
 
 const MainContent = () => {
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const { ref, inView } = useInView();
+
+  // ✅ 모달 열림 상태
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const {
     data,
@@ -20,12 +25,12 @@ const MainContent = () => {
     refetch,
   } = useFetchLp({ order });
 
-  //정렬 바뀌면 목록 리셋
+  // 정렬 바뀌면 목록 리셋
   useEffect(() => {
     refetch();
   }, [order]);
 
-  // 스크롤 트리거
+  // 무한 스크롤
   useEffect(() => {
     if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
@@ -40,24 +45,7 @@ const MainContent = () => {
     <div className="w-full bg-black text-white px-6 py-8">
       
       {/* 정렬 버튼 */}
-      <div className="flex justify-end mb-4 space-x-2">
-        <button
-          onClick={() => setOrder("asc")}
-          className={`px-3 py-1 rounded-md ${
-            order === "asc" ? "bg-pink-500 text-white" : "bg-zinc-800 hover:bg-zinc-700"
-          }`}
-        >
-          오래된순
-        </button>
-        <button
-          onClick={() => setOrder("desc")}
-          className={`px-3 py-1 rounded-md ${
-            order === "desc" ? "bg-pink-500 text-white" : "bg-zinc-800 hover:bg-zinc-700"
-          }`}
-        >
-          최신순
-        </button>
-      </div>
+      <SortButtons order={order} setOrder={setOrder} />
 
       {/* LP 카드 목록 */}
       <div className="grid grid-cols-5 gap-4">
@@ -68,11 +56,9 @@ const MainContent = () => {
         {isFetchingNextPage &&
           Array.from({ length: 5 }).map((_, i) => (
              <SkeletonLpCard key={`bottom-skeleton-${i}`} />
-        ))
-      }
+          ))
+        }
       </div>
-
-
 
       {/* 무한스크롤 트리거 */}
       <div ref={ref} className="h-10" />
@@ -80,10 +66,14 @@ const MainContent = () => {
       {isFetchingNextPage && (
          <p className="text-center text-gray-400 text-sm mt-4 animate-pulse">
              더 불러오는 중...
-      </p>
-    )}
+         </p>
+      )}
 
-      <FloatingButton onClick={() => alert("LP 추가 기능 준비 중 🎧")} />
+      {/* ✅ + 버튼 클릭 → 모달 열기 */}
+      <FloatingButton onClick={() => setIsModalOpen(true)} />
+
+      {/* ✅ 모달 컴포넌트 연결 */}
+      <LpCreateModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };

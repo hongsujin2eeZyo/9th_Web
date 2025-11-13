@@ -5,6 +5,8 @@ import { getToken } from "../utils/storage";
 import { useEffect, useState } from "react";
 import { api } from "../api/axiosInstance";
 import { useSidebarControl } from "../hooks/useSidebarControl";
+import { Routes, Route } from "react-router-dom";
+import LpDetail from "../components/LPDetail";
 
 const Home = () => {
   const token = getToken();
@@ -29,8 +31,8 @@ const Home = () => {
       {/* 상단 네비게이션 */}
       <div className="sticky top-0 z-50">
         <Navbar 
-          onToggleSidebar={toggleSidebar}
-          toggleButtonRef={toggleButtonRef} 
+           onToggleSidebar={toggleSidebar}
+          toggleButtonRef={toggleButtonRef}  
           nickname={nickname} />
       </div>
 
@@ -45,7 +47,11 @@ const Home = () => {
             isSidebarOpen ? "ml-64" : "ml-0"
           }`}
         >
-          <MainContent />
+        <Routes>
+          <Route path="/" element={<MainContent />} />
+          <Route path="/lp/:lpid" element={<LpDetail />} />
+        </Routes>
+                
         </div>
       </div>
     </div>
