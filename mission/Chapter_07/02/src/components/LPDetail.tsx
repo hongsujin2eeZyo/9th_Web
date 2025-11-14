@@ -17,8 +17,9 @@ import SkeletonComment from "../components/SkeletonComment";
 
 import { useDeleteLp } from "../hooks/useDeleteLp";
 import { getMyInfo } from "../api/user";
-import { updateLp, toggleLike } from "../api/lp";
+
 import { updateLpComment, deleteLpComment } from "../api/lpComment";
+import { updateLp, toggleLike } from "../api/lp";
 
 const LpDetail = () => {
   const { lpid } = useParams();
@@ -28,7 +29,7 @@ const LpDetail = () => {
   const token = getToken();
   const queryClient = useQueryClient();
 
-  // 삭제 훅
+  // LP 삭제 훅
   const deleteLpMutation = useDeleteLp(lpId);
 
   // 로그인 유저 정보
@@ -37,6 +38,7 @@ const LpDetail = () => {
     queryFn: getMyInfo,
   });
 
+  // LP 수정 모달
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   const [order, setOrder] = useState<"asc" | "desc">("desc");
@@ -56,7 +58,32 @@ const LpDetail = () => {
     refetch,
   } = useFetchLpComments(lpId, order);
 
-  // LP 수정 mutation
+  /* 댓글 수정 */
+  const updateCommentMutation = useMutation({
+    mutationFn: (params: { commentId: number; content: string }) =>
+      updateLpComment(lpId, params.commentId, params.content),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["lpComments", lpId, order] });
+    },
+  });
+
+  /* 댓글 삭제 */
+  const deleteCommentMutation = useMutation({
+    mutationFn: (commentId: number) => deleteLpComment(lpId, commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["lpComments", lpId, order] });
+    },
+  });
+
+  /* 좋아요 */
+  const likeMutation = useMutation({
+    mutationFn: () => toggleLike(lpId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["lp", lpId] });
+    },
+  });
+
+  /* LP 수정 */
   const updateLpMutation = useMutation({
     mutationFn: (data: { title: string; content: string; thumbnail: string }) =>
       updateLp(lpId, data),
@@ -67,15 +94,7 @@ const LpDetail = () => {
     },
   });
 
-  // 좋아요 mutation
-  const likeMutation = useMutation({
-    mutationFn: () => toggleLike(lpId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["lp", lpId] });
-    },
-  });
-
-  // 로그인 안 되어 있으면 이동
+  /* 로그인 확인 */
   useEffect(() => {
     if (!token) {
       alert("로그인이 필요한 서비스입니다.");
@@ -83,19 +102,17 @@ const LpDetail = () => {
     }
   }, [token]);
 
-  // 정렬 변경 → 댓글 refetch
+  /* 정렬 변경 */
   useEffect(() => {
     refetch();
   }, [order]);
 
-  // 무한 스크롤
+  /* 무한 스크롤 */
   useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
+    if (inView && hasNextPage && !isFetchingNextPage) fetchNextPage();
   }, [inView, hasNextPage, isFetchingNextPage]);
 
-  // 댓글 작성
+  /* 댓글 작성 */
   const handleSubmitComment = () => {
     if (!commentInput.trim()) {
       setCommentError("댓글을 입력해주세요.");
@@ -110,8 +127,6 @@ const LpDetail = () => {
       },
     });
   };
-
- 
 
   if (isLoading) return <SkeletonLpList />;
   if (isError)
@@ -133,16 +148,10 @@ const LpDetail = () => {
         ← 뒤로가기
       </button>
 
-      {/* 본인 글 수정/삭제 버튼 */}
+      {/* 본인 글 수정/삭제 */}
       {myInfo && lp.authorId === myInfo.id && (
         <div className="flex gap-3 mb-6 justify-end">
-          <button
-            onClick={() => setIsEditOpen(true)}
-            className="hover:text-blue-500"
-          >
-            수정
-          </button>
-
+          <button onClick={() => setIsEditOpen(true)}>수정</button>
           <button
             onClick={() => {
               if (confirm("정말 이 LP를 삭제하시겠습니까?")) {
@@ -150,32 +159,22 @@ const LpDetail = () => {
                 navigate("/");
               }
             }}
-            className="hover:text-red-500"
+            className="text-red-400"
           >
             삭제
           </button>
         </div>
       )}
 
-      {/* LP 정보 */}
+      {/* LP 본문 */}
       <div className="max-w-[700px] mx-auto space-y-5">
-
-        <div className="flex justify-between text-gray-400 text-sm">
-          <span>{lp.author.name}</span>
-          <span>{new Date(lp.createdAt).toLocaleDateString()}</span>
-        </div>
-
         <h2 className="text-3xl font-bold">{lp.title}</h2>
 
-        <img
-          src={lp.thumbnail}
-          alt={lp.title}
-          className="rounded-lg w-full aspect-square object-cover"
-        />
+        <img src={lp.thumbnail} className="rounded-lg w-full" />
 
         <p className="text-gray-300 text-sm">{lp.content}</p>
 
-        {/* 좋아요 버튼 */}
+        {/* 좋아요 */}
         <button
           onClick={() => likeMutation.mutate()}
           className="text-pink-400 hover:text-pink-500 mt-4"
@@ -183,47 +182,24 @@ const LpDetail = () => {
           좋아요 ({lp.likes?.length || 0})
         </button>
 
-        {/* 댓글 입력 */}
+        {/* 댓글 영역 */}
         <div className="mt-6">
           <textarea
             value={commentInput}
             onChange={(e) => setCommentInput(e.target.value)}
-            placeholder="댓글을 작성해주세요..."
-            className="w-full bg-zinc-800 text-white p-3 rounded-md focus:ring-2 focus:ring-pink-500"
+            className="w-full bg-zinc-800 p-3 rounded-md"
             rows={3}
+            placeholder="댓글을 작성해주세요..."
           />
           {commentError && (
             <p className="text-red-400 text-xs mt-1">{commentError}</p>
           )}
 
-          <div className="flex justify-end mt-2">
-            <button
-              onClick={handleSubmitComment}
-              className="bg-pink-600 hover:bg-pink-700 px-4 py-2 rounded-md text-sm"
-              disabled={createComment.isPending}
-            >
-              댓글 등록
-            </button>
-          </div>
-        </div>
-
-        {/* 정렬 버튼 */}
-        <div className="flex gap-2 mt-4">
           <button
-            onClick={() => setOrder("asc")}
-            className={`px-3 py-1 rounded-md ${
-              order === "asc" ? "bg-pink-500" : "bg-zinc-800"
-            }`}
+            className="bg-pink-600 px-4 py-2 rounded-md mt-2"
+            onClick={handleSubmitComment}
           >
-            오래된순
-          </button>
-          <button
-            onClick={() => setOrder("desc")}
-            className={`px-3 py-1 rounded-md ${
-              order === "desc" ? "bg-pink-500" : "bg-zinc-800"
-            }`}
-          >
-            최신순
+            댓글 등록
           </button>
         </div>
 
@@ -234,17 +210,17 @@ const LpDetail = () => {
               <CommentItem
                 key={c.id}
                 comment={c}
-                lpId={lpId}
                 myId={myInfo?.id}
-
+                onEdit={(id, content) =>
+                  updateCommentMutation.mutate({ commentId: id, content })
+                }
+                onDelete={(id) => deleteCommentMutation.mutate(id)}
               />
             ))
           )}
         </div>
 
         {isFetchingNextPage && <SkeletonComment />}
-
-        {/* 무한 스크롤 트리거 */}
         <div ref={ref} className="h-5" />
       </div>
 

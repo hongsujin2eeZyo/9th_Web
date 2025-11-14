@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateUser } from "../api/user";
-import { postImage } from "../api/upload"; // 이미지 업로드 API
+import { postImage } from "../api/upload";
 
 type ProfileEditModalProps = {
   isOpen: boolean;
   onClose: () => void;
   user: {
+    id: number;
     name: string;
     bio?: string | null;
     avatar?: string | null;
+    email: string;
   } | null;
 };
 
@@ -22,28 +24,52 @@ const ProfileEditModal = ({ isOpen, onClose, user }: ProfileEditModalProps) => {
   const [bio, setBio] = useState(user.bio ?? "");
   const [avatar, setAvatar] = useState(user.avatar ?? "");
 
-  // 🔥 이미지 업로드
+  /** 이미지 업로드 */
   const handleUploadImage = async (file: File) => {
-    if (!file) return;
-
     try {
       const imageUrl = await postImage(file);
       setAvatar(imageUrl);
     } catch (err) {
-      console.error("이미지 업로드 실패", err);
+      console.error("이미지 업로드 실패:", err);
+      alert("이미지 업로드 실패");
     }
   };
 
-  // 유저 정보 수정 mutation
+  /** 프로필 수정 (Optimistic Update 포함) */
   const updateMutation = useMutation({
     mutationFn: () => updateUser({ name, bio, avatar }),
-    onSuccess: () => {
-      alert("프로필이 수정되었습니다.");
+
+    /** 서버 응답 기다리지 않고 즉시 UI 반영 */
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ["my-info"] });
+
+      const previousUser = queryClient.getQueryData(["my-info"]);
+
+      queryClient.setQueryData(["my-info"], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          name,
+          bio,
+          avatar,
+        };
+      });
+
+      return { previousUser };
+    },
+
+    /** 실패하면 롤백 */
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.previousUser) {
+        queryClient.setQueryData(["my-info"], ctx.previousUser);
+      }
+      alert("프로필 수정 실패 ❗");
+    },
+
+    /** 성공/실패 상관없이 refetch */
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["my-info"] });
       onClose();
-    },
-    onError: () => {
-      alert("프로필 수정 실패 ❗");
     },
   });
 
@@ -60,7 +86,7 @@ const ProfileEditModal = ({ isOpen, onClose, user }: ProfileEditModalProps) => {
       <div className="bg-zinc-800 p-6 rounded-xl w-[350px]">
         <h2 className="text-xl font-bold mb-4">프로필 수정</h2>
 
-        {/* 프로필 이미지 */}
+        {/* 프로필 이미지 미리보기 */}
         <div className="flex flex-col items-center mb-4">
           <img
             src={avatar || "/default-avatar.png"}
@@ -88,7 +114,7 @@ const ProfileEditModal = ({ isOpen, onClose, user }: ProfileEditModalProps) => {
           />
         </div>
 
-        {/* bio */}
+        {/* Bio */}
         <div className="mb-4">
           <label className="text-sm text-gray-300">소개 (Bio)</label>
           <textarea

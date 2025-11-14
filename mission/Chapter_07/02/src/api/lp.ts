@@ -36,3 +36,5 @@ export const updateLp = async (lpId: number, data: {
     const res = await api.post(`/v1/lps/${lpId}/likes`);
     return res.data.data;
   };
+
+ 
