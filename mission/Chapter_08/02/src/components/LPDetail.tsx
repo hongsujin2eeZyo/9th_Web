@@ -41,7 +41,7 @@ const LpDetail = () => {
   // LP 수정 모달
   const [isEditOpen, setIsEditOpen] = useState(false);
 
-  const [order, setOrder] = useState<"asc" | "desc">("desc");
+  const [order] = useState<"asc" | "desc">("desc");
   const [commentInput, setCommentInput] = useState("");
   const [commentError, setCommentError] = useState("");
 
@@ -169,6 +169,30 @@ const LpDetail = () => {
       {/* LP 본문 */}
       <div className="max-w-[700px] mx-auto space-y-5">
         <h2 className="text-3xl font-bold">{lp.title}</h2>
+
+        {/* 작성자 정보 */}
+        <div className="flex items-center gap-4 text-sm text-gray-300">
+          {lp.author?.avatar ? (
+            <img
+              src={lp.author.avatar}
+              alt={`${lp.author.name} 프로필`}
+              className="w-14 h-14 rounded-full object-cover border border-zinc-700"
+            />
+          ) : (
+            <div className="w-14 h-14 rounded-full bg-zinc-800 flex items-center justify-center text-lg font-semibold">
+              {lp.author?.name ? lp.author.name[0] : "?"}
+            </div>
+          )}
+          <div>
+            <p className="text-white font-semibold">
+              {lp.author?.name ?? "알 수 없음"}
+            </p>
+          
+            <p className="text-xs text-gray-500">
+              {new Date(lp.createdAt).toLocaleDateString()}
+            </p>
+          </div>
+        </div>
 
         <img src={lp.thumbnail} className="rounded-lg w-full" />
 

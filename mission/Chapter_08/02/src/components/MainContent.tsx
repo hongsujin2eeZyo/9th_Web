@@ -6,7 +6,8 @@ import FloatingButton from "../components/FloatingButton";
 import { useInView } from "react-intersection-observer";
 import SkeletonLpCard from "../components/SkeletonLpCard";
 import SortButtons from "../components/SortButtons";
-import LpCreateModal from "../components/LpCreateModal"; // ✅ 추가
+import LpCreateModal from "../components/LpCreateModal"; 
+import { useThrottle } from "../hooks/useThrottle";
 
 type MainContentProps = {
   searchQuery: string;
@@ -16,7 +17,7 @@ const MainContent = ({ searchQuery }: MainContentProps) => {
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const { ref, inView } = useInView();
 
-  // ✅ 모달 열림 상태
+  // 모달 열림 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const trimmedSearch = searchQuery.trim();
@@ -87,12 +88,15 @@ const MainContent = ({ searchQuery }: MainContentProps) => {
     isSearchFetchingNextPage,
   ]);
 
-  // 무한 스크롤
+  const shouldFetch = inView && hasNextPage && !isFetchingNextPage;
+  const throttledFetchSignal = useThrottle(shouldFetch, 1000);
+
+  // 무한 스크롤 (throttle 적용)
   useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
+    if (throttledFetchSignal) {
       fetchNextPage();
     }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [throttledFetchSignal, fetchNextPage]);
 
   if (isLoading) return <SkeletonLpList />;
   if (isError)
@@ -133,10 +137,10 @@ const MainContent = ({ searchQuery }: MainContentProps) => {
          </p>
       )}
 
-      {/* ✅ + 버튼 클릭 → 모달 열기 */}
+
       <FloatingButton onClick={() => setIsModalOpen(true)} />
 
-      {/* ✅ 모달 컴포넌트 연결 */}
+    
       <LpCreateModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
