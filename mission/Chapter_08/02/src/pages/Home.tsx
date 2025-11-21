@@ -4,7 +4,7 @@ import MainContent from "../components/MainContent";
 import { getToken } from "../utils/storage";
 import { useEffect, useState } from "react";
 import { api } from "../api/axiosInstance";
-import { useSidebarControl } from "../hooks/useSidebarControl";
+import { useSidebar } from "../hooks/useSidebar";
 import { Routes, Route } from "react-router-dom";
 import LpDetail from "../components/LPDetail";
 import { useDebounce } from "../hooks/useDebounce";
@@ -12,7 +12,7 @@ import { useDebounce } from "../hooks/useDebounce";
 const Home = () => {
   const token = getToken();
   const [nickname, setNickname] = useState<string | null>(null);
-  const { isSidebarOpen, toggleSidebar, sidebarRef, toggleButtonRef } = useSidebarControl();
+  const { isSidebarOpen, toggleSidebar, sidebarRef, toggleButtonRef } = useSidebar();
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebounce(searchInput, 300);
 

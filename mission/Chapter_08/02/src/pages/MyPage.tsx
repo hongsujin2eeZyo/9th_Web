@@ -4,13 +4,13 @@ import Sidebar from "../components/Sidebar";
 import { getToken } from "../utils/storage";
 import { useEffect, useState } from "react";
 import { api } from "../api/axiosInstance";
-import { useSidebarControl } from "../hooks/useSidebarControl";
+import { useSidebar } from "../hooks/useSidebar";
 
 const MyPage = () => {
     const token = getToken();
     const [nickname, setNickname] = useState<string | null>(null);
     const [searchInput, setSearchInput] = useState("");
-    const { isSidebarOpen, toggleSidebar, sidebarRef, toggleButtonRef } = useSidebarControl();
+    const { isSidebarOpen, toggleSidebar, sidebarRef, toggleButtonRef } = useSidebar();
   
     useEffect(() => {
       const fetchUser = async () => {
