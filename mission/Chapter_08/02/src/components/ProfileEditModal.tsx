@@ -12,8 +12,6 @@ type ProfileEditModalProps = {
     bio?: string | null;
     avatar?: string | null;
     email: string;
-    createdAt?: string;
-    updatedAt?: string;
   } | null;
 };
 
