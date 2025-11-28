@@ -1,6 +1,6 @@
 import CartItem from './CartItem';
 import { useSelector, useDispatch } from 'react-redux';
-import { clearCart } from '../store/cartSlice';
+import { openModal } from '../features/modal/modalSlice';
 import type { RootState , AppDispatch } from '../store/store';
 
 const CartList = () => {
@@ -27,7 +27,10 @@ const CartList = () => {
 
       <div className="flex justify-center mt-6">
         <button
-          onClick={() => dispatch(clearCart())}
+          onClick={() => {
+            console.log('전체 삭제 버튼 클릭됨');
+            dispatch(openModal());
+          }}
           className="px-6 py-2 border border-black rounded-lg hover:bg-gray-100 font-semibold"
         >
           전체 삭제

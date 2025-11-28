@@ -1,15 +1,9 @@
-import { useSelector, useDispatch } from 'react-redux';
-import type { RootState , AppDispatch } from '../store/store';
-import { clearCart } from '../store/cartSlice';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../store/store';
 import { FaShoppingCart } from "react-icons/fa";
 
 const Navbar = () => {
-  const dispatch = useDispatch<AppDispatch>();
   const amount = useSelector((state: RootState) => state.cart.amount);
-
-  const handleClearCart = () => {
-    dispatch(clearCart());
-  };
 
 
 return (

@@ -37,19 +37,7 @@ export default function UseReducerCompany(){
         error: null,
     });
 
-    const [error, setError] = useState<string | null>(null);
-
     const [department, setDepartment] = useState('');
-
-    // const changeDepartment = ():Element=>{
-    //     if(department !== '카드메이커'){
-    //         setError('거부권 행사 가능');
-    //     }
-    //     else{
-    //         setDepartment(department);
-    //         setError(null);
-    //     }
-    // };
 
 
     const handleChangeDepartment = (e: ChangeEvent<HTMLInputElement>):void=>{
