@@ -1,37 +1,23 @@
 import CartItem from './CartItem';
-import { useSelector, useDispatch } from 'react-redux';
-import { openModal } from '../features/modal/modalSlice';
-import type { RootState , AppDispatch } from '../store/store';
+import { useCartStore } from '../features/cart/useCartStore';
+import { useModalStore } from '../features/modal/useModalStore';
 
 const CartList = () => {
-  const cartItems = useSelector((state: RootState) => state.cart.cartItems);
-  const dispatch = useDispatch<AppDispatch>();
-
-  if (cartItems.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16">
-        <h2 className="text-2xl font-bold text-gray-700 mb-4">장바구니가 비어있습니다</h2>
-        <p className="text-gray-500">음반을 추가해보세요!</p>
-      </div>
-    );
-  }
+  const { cartItems } = useCartStore();
+  const { open } = useModalStore();
 
   return (
-    <div className="flex flex-col justify-center">
+    <div className="flex flex-col">
       <ul className="space-y-4">
         {cartItems.map((item) => (
           <CartItem key={item.id} item={item} />
         ))}
       </ul>
 
-
       <div className="flex justify-center mt-6">
         <button
-          onClick={() => {
-            console.log('전체 삭제 버튼 클릭됨');
-            dispatch(openModal());
-          }}
-          className="px-6 py-2 border border-black rounded-lg hover:bg-gray-100 font-semibold"
+          onClick={open}
+          className="px-6 py-2 border border-black rounded-lg"
         >
           전체 삭제
         </button>
